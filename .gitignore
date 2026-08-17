@@ -1,2 +1,4 @@
 # The pattern generator, checked out here at build time by daily-pattern.yml.
 .monorepo/
+node_modules/
+.DS_Store

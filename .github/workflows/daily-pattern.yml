@@ -41,16 +41,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .monorepo/.nvmrc
-          cache: pnpm
-          cache-dependency-path: .monorepo/pnpm-lock.yaml
 
-      # Only @prnt/pattern-graph and its deps — the full workspace pulls Next,
-      # Konva, Shopify and friends for nothing.
-      - name: Build @prnt/pattern-graph
+      # Only @prnt/pattern-core and its deps — the full workspace pulls Next,
+      # Shopify and friends for nothing. auto-install-peers is what supplies
+      # react/react-konva/konva: samai-preview.js imports react-konva at module
+      # scope for its React component, so the file will not load without them,
+      # even though the renderer this script calls never touches Konva.
+      - name: Build @prnt/pattern-core
         working-directory: .monorepo
         run: |
-          pnpm install --filter "@prnt/pattern-graph..."
-          pnpm --filter "@prnt/pattern-core" --filter "@prnt/pattern-graph" build
+          pnpm install --filter "@prnt/pattern-core..." --config.auto-install-peers=true
+          pnpm --filter "@prnt/pattern-core" build
+
+      - name: Install the renderer's own deps
+        run: npm ci
 
       - name: Render today's pattern
         run: node scripts/render-daily.mjs

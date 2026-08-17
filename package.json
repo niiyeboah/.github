@@ -1,0 +1,9 @@
+{
+  "name": "niiyeboah-github-profile",
+  "private": true,
+  "type": "module",
+  "description": "Renders the day's prnt.design pattern into the profile README.",
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.80"
+  }
+}
