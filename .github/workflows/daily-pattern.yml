@@ -37,12 +37,16 @@ jobs:
 
       - name: Commit if the pattern changed
         run: |
-          if git diff --quiet -- pattern.svg README.md profile/README.md; then
+          # Stage first, then diff the index. `git diff` against a path that no
+          # longer exists reports no change and exits 0, which is how a rename
+          # from pattern.svg to pattern.png already turned this step into a
+          # silent no-op for a run. A bad pathspec fails `git add` loudly.
+          git add pattern.png README.md profile/README.md
+          if git diff --cached --quiet; then
             echo "no change"
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pattern.svg README.md profile/README.md
           git commit -m "pattern: $(date -u +%Y-%m-%d)"
           git push
