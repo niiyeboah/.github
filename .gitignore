@@ -1,2 +1,3 @@
 # The pattern comes from prnt.design's render API, so nothing is built here.
+node_modules/
 .DS_Store
