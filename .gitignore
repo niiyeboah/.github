@@ -1,4 +1,2 @@
-# The pattern generator, checked out here at build time by daily-pattern.yml.
-.monorepo/
-node_modules/
+# The pattern comes from prnt.design's render API, so nothing is built here.
 .DS_Store

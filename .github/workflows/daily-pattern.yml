@@ -1,14 +1,12 @@
 name: daily pattern
 
-# Renders the day's Samai pattern into pattern.svg and refreshes both READMEs.
-#
-# The generator is private (prnt-design/monorepo), so it is checked out here at
-# build time and only the rendered SVG is committed. PRNT_MONOREPO_TOKEN needs
-# read access to that repo's contents.
+# Renders the day's prnt.design pattern into pattern.svg and refreshes both
+# READMEs. The pattern itself comes from prnt.design's public render route, so
+# this job needs no credentials and nothing to build. See scripts/render-daily.mjs.
 
 on:
   schedule:
-    # 08:05 UTC — just past midnight Pacific in either DST offset.
+    # 08:05 UTC: just past midnight Pacific in either DST offset.
     - cron: "5 8 * * *"
   workflow_dispatch:
 
@@ -23,38 +21,11 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out .github
-        uses: actions/checkout@v4
-
-      - name: Check out the pattern generator
-        uses: actions/checkout@v4
-        with:
-          repository: prnt-design/monorepo
-          token: ${{ secrets.PRNT_MONOREPO_TOKEN }}
-          path: .monorepo
-          persist-credentials: false
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.4
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .monorepo/.nvmrc
-
-      # Only @prnt/pattern-core and its deps — the full workspace pulls Next,
-      # Shopify and friends for nothing. auto-install-peers is what supplies
-      # react/react-konva/konva: samai-preview.js imports react-konva at module
-      # scope for its React component, so the file will not load without them,
-      # even though the renderer this script calls never touches Konva.
-      - name: Build @prnt/pattern-core
-        working-directory: .monorepo
-        run: |
-          pnpm install --filter "@prnt/pattern-core..." --config.auto-install-peers=true
-          pnpm --filter "@prnt/pattern-core" build
-
-      - name: Install the renderer's own deps
-        run: npm ci
+          node-version: 24
 
       - name: Render today's pattern
         run: node scripts/render-daily.mjs
