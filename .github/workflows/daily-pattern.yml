@@ -1,0 +1,68 @@
+name: daily pattern
+
+# Renders the day's Samai pattern into pattern.svg and refreshes both READMEs.
+#
+# The generator is private (prnt-design/monorepo), so it is checked out here at
+# build time and only the rendered SVG is committed. PRNT_MONOREPO_TOKEN needs
+# read access to that repo's contents.
+
+on:
+  schedule:
+    # 08:05 UTC — just past midnight Pacific in either DST offset.
+    - cron: "5 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-pattern
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out .github
+        uses: actions/checkout@v4
+
+      - name: Check out the pattern generator
+        uses: actions/checkout@v4
+        with:
+          repository: prnt-design/monorepo
+          token: ${{ secrets.PRNT_MONOREPO_TOKEN }}
+          path: .monorepo
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .monorepo/.nvmrc
+          cache: pnpm
+          cache-dependency-path: .monorepo/pnpm-lock.yaml
+
+      # Only @prnt/pattern-graph and its deps — the full workspace pulls Next,
+      # Konva, Shopify and friends for nothing.
+      - name: Build @prnt/pattern-graph
+        working-directory: .monorepo
+        run: |
+          pnpm install --filter "@prnt/pattern-graph..."
+          pnpm --filter "@prnt/pattern-core" --filter "@prnt/pattern-graph" build
+
+      - name: Render today's pattern
+        run: node scripts/render-daily.mjs
+
+      - name: Commit if the pattern changed
+        run: |
+          if git diff --quiet -- pattern.svg README.md profile/README.md; then
+            echo "no change"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pattern.svg README.md profile/README.md
+          git commit -m "pattern: $(date -u +%Y-%m-%d)"
+          git push
