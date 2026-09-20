@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://prnt.design">
-    <img src="https://raw.githubusercontent.com/niiyeboah/.github/main/pattern.png?v=2026-09-19" alt="prnt.design pattern for 2026-09-19" width="880">
+    <img src="https://raw.githubusercontent.com/niiyeboah/.github/main/pattern.png?v=2026-09-20" alt="prnt.design pattern for 2026-09-20" width="880">
   </a>
 </p>
 
